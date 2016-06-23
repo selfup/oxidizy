@@ -11,8 +11,14 @@ mod atom;
 struct LifeBlock{
     x_y: (i64, i64),
     z: i64,
-    charge: i64,
+    charge: i8,
     atom: atom::Atom,
+}
+
+impl LifeBlock{
+    fn update_charge(&mut self) {
+        self.charge = self.atom.charge
+    }
 }
 
 fn main() {
@@ -31,6 +37,8 @@ fn main() {
     particles(&mut universe, &mut neut, &mut prot, &mut elec);
     charge_of_field(&mut prot, &mut elec, trimmed);
     atom_charge(&mut universe);
+
+
 
     println!("Size of Universe: {:?}", universe.len());
 }
@@ -53,6 +61,10 @@ fn initialize_life(limit: i64, uni: &mut Vec<LifeBlock>) {
             }
         }
     }
+}
+
+fn tick(uni: &mut Vec<LifeBlock>) {
+
 }
 
 #[test]
@@ -88,7 +100,7 @@ fn it_can_sense_the_field() {
     assert_eq!(elec.len(), 1);
 }
 
-fn charge_of_field(p: &mut  Vec<i64>, e: &mut Vec<i64>, u: i64) {
+fn charge_of_field(p: &mut  Vec<i8>, e: &mut Vec<i8>, u: i64) {
     let size = (u + 1) * (u + 1) * (u + 1);
     if p[0] == size && e[0] == size {
         println!("field has a neutral charge");
@@ -112,29 +124,43 @@ fn atom_charge(input: &mut Vec<LifeBlock>) {
 }
 
 #[test]
-fn it_can_dictate_an_atoms_charge() {
-    let mut universe = vec![];
-    let mut neut = vec![0];
-    let mut prot = vec![0];
-    let mut elec = vec![0];
-    let mut rand_nums = vec![0];
-    let mut rando = "";
-    initialize_life(5, &mut universe);
-    particles(&mut universe, &mut neut, &mut prot, &mut elec);
-    atom_charge(&mut universe);
+fn atoms_have_a_charge() {
+    let sodium = atom::Atom {
+        location: (1,1,1),
+        electrons: 10,
+        nucleus: atom::Nucleus {
+            protons: 11,
+            neutrons: 11
+        }
+    };
 
-    assert_eq!(universe.len(), 216);
-
-    for u in universe {
-        rand_nums.push(u.charge)
-    }
-
-    rand_nums.sort();
-    rand_nums.dedup();
-
-    if rand_nums.len() > 1 {
-        rando = "random"
-    }
-
-    assert_eq!(rando, "random");
+    assert_eq!(1, sodium.charge());
 }
+
+//#[test]
+//fn it_can_dictate_an_atoms_charge() {
+//    let mut universe = vec![];
+//    let mut neut = vec![0];
+//    let mut prot = vec![0];
+//    let mut elec = vec![0];
+//    let mut rand_nums = vec![0];
+//    let mut rando = "";
+//    initialize_life(5, &mut universe);
+//    particles(&mut universe, &mut neut, &mut prot, &mut elec);
+//    atom_charge(&mut universe);
+//
+//    assert_eq!(universe.len(), 216);
+//
+//    for u in universe {
+//        rand_nums.push(u.charge)
+//    }
+//
+//    rand_nums.sort();
+//    rand_nums.dedup();
+//
+//    if rand_nums.len() > 1 {
+//        rando = "random"
+//    }
+//
+//    assert_eq!(rando, "random");
+//}
