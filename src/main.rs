@@ -4,6 +4,8 @@ use std::env;
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
 
+use rayon::prelude::*;
+
 mod builder;
 use builder::Blocks;
 
@@ -109,29 +111,41 @@ fn update_albedo(
 fn update_odd_block_atoms(
     mut query: Query<&mut builder::core::Block>,
 ) {
-    for mut block in query.iter_mut() {
-        if block.id % 2 != 0 {
-            let mut rng = rand::thread_rng();
-    
-            builder::mutate_blocks_with_new_particles(&mut rng, &mut block);
-    
-            builder::calculate_charge(&mut block);
-        }
+    let mut query_vec = vec![];
+
+    for block in query.iter_mut() {
+        query_vec.push(block);
     }
+    
+    query_vec.par_chunks_mut(2).for_each_init(|| rand::thread_rng(), |rng, blocks| {
+        for block in blocks {
+            if block.id % 2 != 0 {
+                builder::mutate_blocks_with_new_particles(rng, block);
+        
+                builder::calculate_charge(block);
+            }
+        }
+    });
 }
 
 fn update_even_block_atoms(
     mut query: Query<&mut builder::core::Block>,
 ) {
-    for mut block in query.iter_mut() {
-        if block.id % 2 == 0 {
-            let mut rng = rand::thread_rng();
-    
-            builder::mutate_blocks_with_new_particles(&mut rng, &mut block);
-    
-            builder::calculate_charge(&mut block);
-        }
+    let mut query_vec = vec![];
+
+    for block in query.iter_mut() {
+        query_vec.push(block);
     }
+    
+    query_vec.par_chunks_mut(2).for_each_init(|| rand::thread_rng(), |rng, blocks| {
+        for block in blocks {
+            if block.id % 2 == 0 {
+                builder::mutate_blocks_with_new_particles(rng, block);
+        
+                builder::calculate_charge(block);
+            }
+        }
+    });
 }
 
 fn generate_universe() -> Vec<builder::core::Block> {
