@@ -40,7 +40,7 @@ Bevy/ECS code is not tested. Still in beta and too many refactorings will take p
 
 However if you want to fill up a bunch of RAM and see how performant the `builder::generate_universe` is, you can run the test script which runs in release mode:
 
-_warning this used up 80% of my RAM and I have 32GB of RAM!
+_warning this used up 80% of my RAM and I have 32GB of RAM!_
 
 **`SHRED_SIZE=190` is cubed and then 118 default protons and neutrons are made per atom!**
 
