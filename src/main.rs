@@ -1,13 +1,13 @@
 extern crate rand;
 
 use std::env;
+
 use bevy::prelude::*;
 use bevy::render::pass::ClearColor;
 
 use rayon::prelude::*;
 
 mod builder;
-use builder::Blocks;
 
 #[allow(unused_imports)]
 use rand::Rng;
@@ -33,8 +33,16 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let mut size = String::new();
+    let args: Vec<String> = env::args().collect();
 
-    let blocks = generate_universe();
+    if args.len() > 1 {
+        size = args[1].clone();
+    }
+
+    let parsed_size = size.trim().parse::<u32>().unwrap();
+
+    let blocks = builder::generate_universe(parsed_size);
 
     for block in blocks {
         let y = block.y as f32;
@@ -137,7 +145,7 @@ fn update_even_block_atoms(
         query_vec.push(block);
     }
     
-    query_vec.par_chunks_mut(2).for_each_init(|| rand::thread_rng(), |rng, blocks| {
+    query_vec.par_chunks_mut(5).for_each_init(|| rand::thread_rng(), |rng, blocks| {
         for block in blocks {
             if block.id % 2 == 0 {
                 builder::mutate_blocks_with_new_particles(rng, block);
@@ -146,39 +154,6 @@ fn update_even_block_atoms(
             }
         }
     });
-}
-
-fn generate_universe() -> Vec<builder::core::Block> {
-    let mut size = String::new();
-    let args: Vec<String> = env::args().collect();
-
-    if args.len() > 1 {
-        size = args[1].clone();
-    }
-
-    let parsed_size = size.trim().parse::<u32>().unwrap();
-
-    println!("Building Universe..");
-
-    let mut universe = vec![];
-    let mut neturon: [u32; 1] = [0];
-    let mut proton: [u32; 1] = [0];
-    let mut electron: [u32; 1] = [0];
-
-    let mut generated_universe = Blocks::initialize_universe(parsed_size, &mut universe);
-
-    generated_universe = Blocks::tick(parsed_size, &mut generated_universe);
-    Blocks::particles(&mut generated_universe, &mut neturon, &mut proton, &mut electron);
-
-    println!("Snapshot..\n\n{:?}\n", &generated_universe[0]);
-    println!("Universe built!\nChecking the charge..");
-
-    Blocks::charge_of_field(&mut proton, &mut electron, parsed_size as u32);
-    Blocks::atom_charge(&mut generated_universe);
-
-    println!("Size of Universe: {:?}", generated_universe.len());
-
-    generated_universe
 }
 
 fn camera_movement(

@@ -2,4 +2,4 @@
 
 set -euox pipefail
 
-cargo test
+cargo test --release -- --nocapture
