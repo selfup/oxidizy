@@ -140,8 +140,6 @@ impl ElectricCharge {
     }
 }
 
-
-
 #[derive(Debug, Copy, Clone)]
 pub struct Baryons {}
 
