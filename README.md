@@ -65,7 +65,7 @@ Checking the charge..
 Field is Cationic
 Amount of Atoms in Universe: 6859000
 Amount of protons and neutrons: 1618724000
-Time to generate/mutate/pass in ms: 5793
+Time to generate/mutate/pass in ms: 4799
 test builder::it_can_shred ... ok
 
 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
