@@ -20,6 +20,7 @@ fn main() {
         .add_system(update_block_atoms.system())
         .add_system(update_block_spheres.system())
         .add_system(camera_movement.system())
+        .add_system(random_movement.system())
         .add_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
 }
@@ -132,6 +133,16 @@ fn camera_movement(
  
             transform.translation += input_dir * time.delta_seconds * 10.0;
         }
+    }
+}
+
+fn random_movement(
+    mut query: Query<(&mut Transform, &mut builder::core::Block)>,
+) {
+    for (mut transform,  block) in query.iter_mut() {
+        let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+
+        transform.translation = new_translation;
     }
 }
 
