@@ -32,7 +32,7 @@ Field is Anionic
 Amount of Atoms in Universe: 27000
 ```
 
-![image](https://user-images.githubusercontent.com/9837366/99133467-5dfd2680-25d7-11eb-9377-de7feb36336d.png)
+![image](https://user-images.githubusercontent.com/9837366/99208853-dce09380-277e-11eb-88be-e07d2044b10c.png)
 
 ### Testing
 
