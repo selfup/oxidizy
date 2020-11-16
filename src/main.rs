@@ -17,10 +17,8 @@ fn main() {
         .add_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup.system())
-        .add_system(update_odd_block_atoms.system())
-        .add_system(update_even_block_atoms.system())
-        .add_system(update_odd_block_spheres.system())
-        .add_system(update_even_block_spheres.system())
+        .add_system(update_block_atoms.system())
+        .add_system(update_block_spheres.system())
         .add_system(camera_movement.system())
         .add_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
@@ -78,25 +76,12 @@ fn setup(
         .with(CameraMatcher());
 }
 
-fn update_even_block_spheres(
+fn update_block_spheres(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut query: Query<(&Handle<StandardMaterial>, &builder::core::Block)>,
 ) {
     for (material_handle, block) in query.iter_mut() {
-        if block.id % 2 == 0 {
-            update_albedo(&mut materials, material_handle, block);
-        }
-    }
-}
-
-fn update_odd_block_spheres(
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut query: Query<(&Handle<StandardMaterial>, &builder::core::Block)>,
-) {
-    for (material_handle, block) in query.iter_mut() {
-        if block.id % 2 != 0 {
-            update_albedo(&mut materials, material_handle, block);
-        }
+        update_albedo(&mut materials, material_handle, block);
     }
 }
 
@@ -116,7 +101,7 @@ fn update_albedo(
     material.albedo = Color::rgb(r, 0.0, 1.0).into();
 }
 
-fn update_odd_block_atoms(
+fn update_block_atoms(
     mut query: Query<&mut builder::core::Block>,
 ) {
     let mut query_vec = vec![];
@@ -125,33 +110,11 @@ fn update_odd_block_atoms(
         query_vec.push(block);
     }
     
-    query_vec.par_chunks_mut(2).for_each_init(|| rand::thread_rng(), |rng, blocks| {
+    query_vec.par_chunks_mut(8).for_each_init(|| rand::thread_rng(), |rng, blocks| {
         for block in blocks {
-            if block.id % 2 != 0 {
-                builder::mutate_blocks_with_new_particles(rng, block);
-        
-                builder::calculate_charge(block);
-            }
-        }
-    });
-}
-
-fn update_even_block_atoms(
-    mut query: Query<&mut builder::core::Block>,
-) {
-    let mut query_vec = vec![];
-
-    for block in query.iter_mut() {
-        query_vec.push(block);
-    }
+            builder::mutate_blocks_with_new_particles(rng, block);
     
-    query_vec.par_chunks_mut(5).for_each_init(|| rand::thread_rng(), |rng, blocks| {
-        for block in blocks {
-            if block.id % 2 == 0 {
-                builder::mutate_blocks_with_new_particles(rng, block);
-        
-                builder::calculate_charge(block);
-            }
+            builder::calculate_charge(block);
         }
     });
 }
