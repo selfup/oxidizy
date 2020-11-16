@@ -43,7 +43,7 @@ impl Blocks {
     
         println!("Threads: {}", rayon::current_num_threads());
     
-        universe.clone()
+        universe
     }
     
     pub fn particles(universe: &mut Vec<core::Block>, neutron: &mut [u32; 1], proton: &mut [u32; 1], electron: &mut [u32; 1]) {
