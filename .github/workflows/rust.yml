@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: OS Deps
-      run: apt-get update && apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev -y
+      run: sudo apt-get update && sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev -y
     - name: Build
       run: cargo build --verbose
     - name: Tests
