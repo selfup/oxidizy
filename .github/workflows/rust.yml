@@ -18,6 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: OS Deps
       run: sudo apt-get update && sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev -y
+    - uses: Swatinem/rust-cache@v1.3.0
     - name: Build
       run: cargo build --verbose
     - name: Tests
