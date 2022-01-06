@@ -72,3 +72,8 @@ real    0m12.779s
 user    0m0.000s
 sys     0m0.000s
 ```
+
+### Repos
+
+Development Repo is on GitHub: https://github.com/selfup/oxidizy
+Backup/Archive Repo is on GitLab: https://gitlab.com/selfup/oxidizy
