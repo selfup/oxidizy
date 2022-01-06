@@ -1,0 +1,24 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: OS Deps
+      run: apt-get update && apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev -y
+    - name: Build
+      run: cargo build --verbose
+    - name: Tests
+      run: ./scripts/ci.sh
