@@ -47,10 +47,10 @@ fn main() {
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup)
-        .add_system(update_block_atoms.system())
-        .add_system(update_block_spheres.system())
-        .add_system(camera_movement.system())
-        .add_system(random_movement.system())
+        .add_system(update_block_atoms)
+        .add_system(update_block_spheres)
+        .add_system(camera_movement)
+        .add_system(random_movement)
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
 }
