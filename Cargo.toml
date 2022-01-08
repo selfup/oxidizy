@@ -2,7 +2,7 @@
 name = "oxidizy"
 version = "0.1.0"
 authors = ["selfup <boudinot.regis@yahoo.com>"]
-edition = "2018"
+edition = "2021"
 
 [workspace]
 members = ["crates/*"]
@@ -11,4 +11,4 @@ members = ["crates/*"]
 unigen = { path = "crates/unigen", version = "0.1.0", default-features = false }
 
 rand = "0.8.4"
-bevy = "0.4.0"
+bevy = "0.6.0"

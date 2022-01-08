@@ -1,10 +1,8 @@
 extern crate rand;
 
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, PrintDiagnosticsPlugin};
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy::render::pass::ClearColor;
 use bevy::tasks::prelude::*;
-use bevy::tasks::ParallelIterator;
 use std::env;
 
 const CHUNK_SIZE: usize = 128;
@@ -24,7 +22,7 @@ struct ChargeMaterials {
 impl ChargeMaterials {
     fn new(mut asset_server: ResMut<Assets<Material>>) -> Self {
         Self {
-            negative_mat: asset_server.add(Color::rgb(2.0, 0., 1.).into()),
+            negative_mat: asset_server.add(Color::rgb(2.0, 0.0, 1.0).into()),
             positive_mats: {
                 (0..std::i8::MAX)
                     .map(|r| asset_server.add(Color::rgb(r as f32, 0., 1.).into()))
@@ -43,26 +41,32 @@ impl ChargeMaterials {
 }
 
 fn main() {
-    App::build()
-        .add_resource(Msaa { samples: 4 })
+    App::new()
+        .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_plugin(PrintDiagnosticsPlugin::default())
+        .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_startup_system(setup.system())
+        .add_startup_system(setup)
         .add_system(update_block_atoms.system())
         .add_system(update_block_spheres.system())
         .add_system(camera_movement.system())
         .add_system(random_movement.system())
-        .add_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+        .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
 }
 
+#[derive(Component)]
 struct CameraMatcher();
 
+#[derive(Component)]
+struct BlockMatcher {
+    block: builder::core::Block,
+}
+
 fn setup(
-    commands: &mut Commands,
+    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<Material>>,
+    asset_server: ResMut<Assets<Material>>,
 ) {
     let parsed_size: u32 = if let Some(arg) = env::args().nth(1) {
         arg.trim().parse().unwrap()
@@ -70,7 +74,7 @@ fn setup(
         DEFAULT_SIZE
     };
 
-    let charged_mats = ChargeMaterials::new(materials);
+    let charged_mats = ChargeMaterials::new(asset_server);
 
     let blocks = builder::generate_universe(parsed_size);
 
@@ -80,55 +84,56 @@ fn setup(
     }));
 
     for block in blocks {
-        let y = block.y as f32;
         let x = block.x as f32;
+        let y = block.y as f32;
         let z = block.z as f32;
 
         let r = block.charge;
 
         commands
-            .spawn(PbrBundle {
+            .spawn_bundle(PbrBundle {
                 mesh: mesh_handle.clone(),
                 material: charged_mats.get(r).clone(),
-                transform: Transform::from_translation(Vec3::new(x, y, z)),
+                transform: Transform::from_xyz(x, y, z),
                 ..Default::default()
             })
-            .with(block);
+            .insert(BlockMatcher { block });
     }
 
     commands.insert_resource(charged_mats);
 
+    commands.insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 0.15,
+    });
+
+    let up = Vec3::new(0.0, 1.0, 0.0);
+
     commands
-        .spawn(LightBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            ..Default::default()
-        })
-        .spawn(Camera3dBundle {
+        .spawn_bundle(PerspectiveCameraBundle {
             transform: Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
-                .looking_at(Vec3::default(), Vec3::unit_y()),
+                .looking_at(Vec3::default(), up),
             ..Default::default()
         })
-        .with(CameraMatcher());
+        .insert(CameraMatcher());
 }
 
 fn update_block_spheres(
     pool: Res<ComputeTaskPool>,
     mats: Res<ChargeMaterials>,
-    mut query: Query<(&mut Handle<StandardMaterial>, &builder::core::Block)>,
+    mut query: Query<(&mut Handle<Material>, &mut BlockMatcher)>,
 ) {
-    query
-        .par_iter_mut(CHUNK_SIZE)
-        .for_each(&pool, |(mut material_handle, block)| {
-            let r = block.charge;
-            *material_handle = mats.get(r).clone();
-        });
+    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut material_handle, block_matcher)| {
+        let r = block_matcher.block.charge;
+        *material_handle = mats.get(r).clone();
+    });
 }
 
-fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut builder::core::Block>) {
-    query.par_iter_mut(CHUNK_SIZE).for_each(&pool, |mut block| {
-        builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block);
+fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMatcher>) {
+    query.par_for_each_mut(&pool, CHUNK_SIZE, |mut block| {
+        builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
 
-        builder::calculate_charge(&mut block);
+        builder::calculate_charge(&mut block.block);
     });
 }
 
@@ -148,49 +153,44 @@ fn camera_movement(
     }
 }
 
-fn random_movement(
-    pool: Res<ComputeTaskPool>,
-    mut query: Query<(&mut Transform, &builder::core::Block)>,
-) {
-    query
-        .par_iter_mut(CHUNK_SIZE)
-        .for_each(&pool, |(mut transform, block)| {
-            let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+fn random_movement(pool: Res<ComputeTaskPool>, mut query: Query<(&mut Transform, &BlockMatcher)>) {
+    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut transform, block_matcher)| {
+        let block = block_matcher.block;
 
-            transform.translation = new_translation;
-        });
+        let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+
+        transform.translation = new_translation;
+    });
 }
 
 fn get_input_dir(keyboard_input: Res<Input<KeyCode>>) -> Vec3 {
     let mut input_dir = Vec3::default();
 
+    let right = Vec3::new(1.0, 0.0, 0.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let forward = Vec3::new(0.0, 0.0, 1.0);
+
     if keyboard_input.pressed(KeyCode::W) {
-        let forward = Vec3::unit_z();
         input_dir -= forward;
     }
 
     if keyboard_input.pressed(KeyCode::S) {
-        let forward = Vec3::unit_z();
         input_dir += forward;
     }
 
     if keyboard_input.pressed(KeyCode::A) {
-        let right = Vec3::unit_x();
         input_dir -= right;
     }
 
     if keyboard_input.pressed(KeyCode::D) {
-        let right = Vec3::unit_x();
         input_dir += right;
     }
 
     if keyboard_input.pressed(KeyCode::Space) {
-        let up = Vec3::unit_y();
         input_dir += up;
     }
 
     if keyboard_input.pressed(KeyCode::LShift) {
-        let up = Vec3::unit_y();
         input_dir -= up;
     }
 
