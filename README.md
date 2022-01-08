@@ -9,7 +9,7 @@ This is how I learned rust.
 
 The idea was to build a cli tool that can generate enough life, and _sublife_ (neutrons, protons, electrons), that when you give the tool atomic weights, it can "generate" appropriate elements.
 
-Now it uses Bevy and it's amazing ECS system to constantly iterate and update atoms on the fly with new particles.
+Now it uses Bevy and the amazing ECS system to constantly iterate and update atoms on the fly with new particles.
 
 Another ambitious goal, would be to set up bonding logic to create water or other compounds.
 
