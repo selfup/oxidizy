@@ -166,31 +166,33 @@ fn random_movement(pool: Res<ComputeTaskPool>, mut query: Query<(&mut Transform,
 fn get_input_dir(keyboard_input: Res<Input<KeyCode>>) -> Vec3 {
     let mut input_dir = Vec3::default();
 
-    let right = Vec3::new(1.0, 0.0, 0.0);
-    let up = Vec3::new(0.0, 1.0, 0.0);
-    let forward = Vec3::new(0.0, 0.0, 1.0);
-
     if keyboard_input.pressed(KeyCode::W) {
+        let forward = Vec3::new(0.0, 0.0, 1.0);
         input_dir -= forward;
     }
 
     if keyboard_input.pressed(KeyCode::S) {
+        let forward = Vec3::new(0.0, 0.0, 1.0);
         input_dir += forward;
     }
 
     if keyboard_input.pressed(KeyCode::A) {
+        let right = Vec3::new(1.0, 0.0, 0.0);
         input_dir -= right;
     }
 
     if keyboard_input.pressed(KeyCode::D) {
+        let right = Vec3::new(1.0, 0.0, 0.0);
         input_dir += right;
     }
 
     if keyboard_input.pressed(KeyCode::Space) {
+        let up = Vec3::new(0.0, 1.0, 0.0);
         input_dir += up;
     }
 
     if keyboard_input.pressed(KeyCode::LShift) {
+        let up = Vec3::new(0.0, 1.0, 0.0);
         input_dir -= up;
     }
 
