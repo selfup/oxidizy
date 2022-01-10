@@ -14,28 +14,36 @@ type Material = StandardMaterial;
 
 #[allow(unused_imports)]
 
-struct ChargeMaterials {
-    negative_mat: Handle<Material>,
-    positive_mats: Vec<Handle<Material>>,
+struct ChargedAtomMaterials {
+    materials: Vec<Handle<Material>>,
 }
 
-impl ChargeMaterials {
+impl ChargedAtomMaterials {
     fn new(mut asset_server: ResMut<Assets<Material>>) -> Self {
+        let lower_bound: i8 = 0;
+        let upper_bound: i8 = 3;
+
         Self {
-            negative_mat: asset_server.add(Color::rgb(2.0, 0.0, 1.0).into()),
-            positive_mats: {
-                (0..std::i8::MAX)
-                    .map(|r| asset_server.add(Color::rgb(r as f32, 0., 1.).into()))
+            materials: {
+                (lower_bound..upper_bound)
+                    .map(|r| {
+                        let color: Color = Color::rgb(r as f32, 0., 1.);
+
+                        asset_server.add(color.into())
+                    })
                     .collect()
             },
         }
     }
 
     fn get(&self, r: i8) -> &Handle<Material> {
-        if r < 0 {
-            &self.negative_mat
+        let lower_bound: i8 = -1;
+        let lower_bound_index_map: usize = 2;
+
+        if r == lower_bound {
+            &self.materials[lower_bound_index_map]
         } else {
-            &self.positive_mats[r as usize]
+            &self.materials[r as usize]
         }
     }
 }
@@ -74,7 +82,7 @@ fn setup(
         DEFAULT_SIZE
     };
 
-    let charged_mats = ChargeMaterials::new(asset_server);
+    let charged_atom_materials = ChargedAtomMaterials::new(asset_server);
 
     let blocks = builder::generate_universe(parsed_size);
 
@@ -93,18 +101,18 @@ fn setup(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: mesh_handle.clone(),
-                material: charged_mats.get(r).clone(),
+                material: charged_atom_materials.get(r).clone(),
                 transform: Transform::from_xyz(x, y, z),
                 ..Default::default()
             })
             .insert(BlockMatcher { block });
     }
 
-    commands.insert_resource(charged_mats);
+    commands.insert_resource(charged_atom_materials);
 
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 0.15,
+        brightness: 0.25,
     });
 
     let up = Vec3::new(0.0, 1.0, 0.0);
@@ -120,12 +128,12 @@ fn setup(
 
 fn update_block_spheres(
     pool: Res<ComputeTaskPool>,
-    mats: Res<ChargeMaterials>,
+    charged_atom_materials: Res<ChargedAtomMaterials>,
     mut query: Query<(&mut Handle<Material>, &mut BlockMatcher)>,
 ) {
     query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut material_handle, block_matcher)| {
         let r = block_matcher.block.charge;
-        *material_handle = mats.get(r).clone();
+        *material_handle = charged_atom_materials.get(r).clone();
     });
 }
 
