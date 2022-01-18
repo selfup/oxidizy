@@ -152,7 +152,9 @@ pub fn mutate_blocks_with_new_particles<R: Rng>(rng: &mut R, block: &mut core::B
 }
 
 pub fn generate_universe(parsed_size: u32) -> Vec<core::Block> {
-    println!("{}", "--------------------------------".red().bold());
+    let separator: &str = "--------------------------------";
+
+    println!("{}", &separator.magenta().bold());
 
     let mut neutron: [u32; 1] = [0];
     let mut proton: [u32; 1] = [0];
@@ -168,12 +170,18 @@ pub fn generate_universe(parsed_size: u32) -> Vec<core::Block> {
         &mut electron,
     );
 
-    println!("{}", "--------------------------------".purple().bold());
-    println!("Universe built!");
-    println!("{}", "--------------------------------".yellow().bold());
+    println!("{}", &separator.yellow().bold());
+
+    println!("Universe built");
+    println!("{}", &separator.green().bold());
+
+    println!("Calculating charge of field..");
+    println!("{}", &separator.yellow().bold());
 
     Blocks::charge_of_field(&mut proton, &mut electron, parsed_size as u32);
     Blocks::atom_charge(&mut generated_universe);
+
+    println!("{}", &separator.green().bold());
 
     let default_baryons = 236;
     let quarks_per_baryon = 3;
@@ -183,11 +191,14 @@ pub fn generate_universe(parsed_size: u32) -> Vec<core::Block> {
     let total_baryons = generated_universe_length * default_baryons;
     let total_quarks = generated_universe_length * default_baryons * quarks_per_baryon;
 
-    println!("{}", "--------------------------------".magenta().bold());
-    println!("Atoms: {}", total_atoms);
-    println!("Baryons: {}", total_baryons);
-    println!("Quarks: {}", total_quarks);
-    println!("{}", "--------------------------------".red().bold());
+    println!("Atoms: {}", &total_atoms);
+    println!("Baryons: {}", &total_baryons);
+    println!("Quarks: {}", &total_quarks);
+    println!("{}", &separator.magenta().bold());
+
+    let total_objects = &total_atoms + &total_baryons + &total_quarks;
+    println!("Total objects in memory: {}", &total_objects);
+    println!("{}", &separator.green().bold());
 
     generated_universe
 }
