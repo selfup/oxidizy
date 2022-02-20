@@ -1,5 +1,5 @@
 ![github-pipeline](https://github.com/selfup/oxidizy/actions/workflows/rust.yml/badge.svg)
-![gitlab-pipeline](https://gitlab.com/selfup/oxidizy/badges/master/pipeline.svg)
+![gitlab-pipeline](https://gitlab.com/selfup/oxidizy/badges/main/pipeline.svg)
 
 # Oxidizy
 
