@@ -6,7 +6,7 @@ diff="rust updates"
 no_diff="no rust updates"
 gs_check=$(git status -s)
 rust_checks=$(
-    (echo $gs_check | grep -e '.rs' -e 'Cargo') && echo $diff || echo $no_diff
+    (echo $gs_check | grep -q -e '.rs' -e 'Cargo') && echo $diff || echo $no_diff
 )
 
 date
@@ -31,4 +31,6 @@ then
     echo 'running tests'
 
     ./scripts/test.sh
+
+    exit 0
 fi
