@@ -10,8 +10,10 @@ echo 'running rustfmt'
 
 cargo fmt --all -- --check
 
-echo 'success!'
+echo 'format success!'
 
 echo 'running tests'
 
 ./scripts/test.sh
+
+echo 'ci success!'
