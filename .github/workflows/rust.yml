@@ -22,6 +22,8 @@ jobs:
                 g++ pkg-config libx11-dev \
                 libasound2-dev libudev-dev \
                   -y"
-    - uses: Swatinem/rust-cache@v1.3.0
+    - uses: |
+        Swatinem/rust-cache@v1.3.0
+        actions/checkout@v2
     - name: Tests
       run: ./scripts/ci.sh
