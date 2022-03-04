@@ -6,7 +6,7 @@ date
 
 status=$((git status -s | grep -q -e '.rs' -e 'Cargo.') && echo 1 || echo 0)
 
-if [[ $? != 0 ]]
+if [[ $status != 0 ]]
 then
     echo 'no need to run rust CI scripts..'
     echo 'exiting succesfully..'
