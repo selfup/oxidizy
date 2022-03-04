@@ -23,22 +23,38 @@ More to come :rocket:
 
 Example Use:
 
-```bash
+```
 $ ./scripts/rel.run.sh 30
-+ cargo build -q --release
 + cargo run -q --release 30
+2022-03-04T01:33:07.274214Z  INFO bevy_render::renderer: AdapterInfo { name: "NVIDIA GeForce GTX 1660 Ti", vendor: 4318, device: 8578, device_type: DiscreteGpu, backend: Vulkan }
 --------------------------------
 Threads: 16
 Building..
 --------------------------------
-Universe built!
+Universe built
 --------------------------------
-Field is Anionic
+Calculating charge of field..
+--------------------------------
+Field is Cationic
 --------------------------------
 Atoms: 27000
 Baryons: 6372000
 Quarks: 19116000
 --------------------------------
+Total objects in memory: 25515000
+--------------------------------
+
+...
+
+2022-03-04T01:33:24.395275Z  INFO bevy diagnostic: frame_time  :    0.011610s (avg 0.012227s)
+2022-03-04T01:33:24.395534Z  INFO bevy diagnostic: fps         :   82.042901  (avg 82.155862)
+2022-03-04T01:33:24.395819Z  INFO bevy diagnostic: frame_count :  801.000000  (avg 801.0000)      
+2022-03-04T01:33:25.388228Z  INFO bevy diagnostic: frame_time  :    0.012523s (avg 0.012366s)
+2022-03-04T01:33:25.388604Z  INFO bevy diagnostic: fps         :   81.464006  (avg 81.372364)
+2022-03-04T01:33:25.389062Z  INFO bevy diagnostic: frame_count :  882.000000  (avg 882.0000)      
+2022-03-04T01:33:26.393287Z  INFO bevy diagnostic: frame_time  :    0.012117s (avg 0.012703s)
+2022-03-04T01:33:26.393578Z  INFO bevy diagnostic: fps         :   81.429777  (avg 81.317298)
+2022-03-04T01:33:26.393890Z  INFO bevy diagnostic: frame_count :  963.000000  (avg 963.000000)  
 ```
 
 ![image](https://user-images.githubusercontent.com/9837366/99208853-dce09380-277e-11eb-88be-e07d2044b10c.png)
@@ -51,24 +67,28 @@ However if you want to fill up a bunch of RAM and see how performant the `builde
 
 _warning this used up 80% of my RAM and I have 32GB of RAM!_
 
-**`480` is cubed and then 118 default protons and neutrons are made per atom!**
+**`460` is cubed and then 118 default protons and neutrons are made per atom!**
 
 ```
-$ ./scripts/generate.sh 480
+$ ./scripts/generate.sh 460
 --------------------------------
 Threads: 16
 Building..
 --------------------------------
-Universe built!
+Universe built
 --------------------------------
-Field is Cationic
+Calculating charge of field..
 --------------------------------
-Atoms: 110592000
-Baryons: 26099712000
-Quarks: 78299136000
+Field is Anionic
+--------------------------------
+Atoms: 97336000
+Baryons: 22971296000
+Quarks: 68913888000
+--------------------------------
+Total objects in memory: 91982520000
 --------------------------------
 
-real    0m12.779s
+real    0m10.562s
 user    0m0.000s
 sys     0m0.000s
 ```
