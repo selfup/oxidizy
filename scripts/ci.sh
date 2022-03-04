@@ -4,7 +4,7 @@ set -eo pipefail
 
 date
 
-git status -s | grep -q -e '.rs' -e 'Cargo.'
+status=$((git status -s | grep -q -e '.rs' -e 'Cargo.') && echo 1 || echo 0)
 
 if [[ $? != 0 ]]
 then
