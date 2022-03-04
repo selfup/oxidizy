@@ -23,6 +23,5 @@ jobs:
                 libasound2-dev libudev-dev \
                   -y"
     - uses: Swatinem/rust-cache@v1.3.0
-    - uses: actions/checkout@v2
     - name: Tests
       run: ./scripts/ci.sh
