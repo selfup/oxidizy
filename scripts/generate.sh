@@ -2,9 +2,7 @@
 
 set -eo pipefail
 
-cd crates/unigen
-
-cargo build -q --release
+cargo build --release --quiet --package unigen
 
 if [[ $1 == '' ]]
 then
@@ -14,6 +12,4 @@ then
     exit 1
 fi
 
-time cargo run -q --release $1
-
-cd ../../
+time cargo run --release --quiet --package unigen -- $1

@@ -17,3 +17,11 @@ echo 'running tests'
 ./scripts/test.sh
 
 echo 'ci success!'
+
+sleep 1s
+
+echo 'running generate'
+
+./scripts/generate.sh 50
+
+echo 'generate success!'
