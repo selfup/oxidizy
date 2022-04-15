@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
-set -euox pipefail
+set -eox pipefail
 
-cargo run -q --release "$1"
+if [[ $1 != "" ]]
+then
+    cargo run -q --release "$1"
+else
+    cargo run -q --release
+fi

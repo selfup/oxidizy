@@ -128,11 +128,9 @@ fn setup(
 
 fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMatcher>) {
     query.par_for_each_mut(&pool, CHUNK_SIZE, |mut block| {
-        for _n in 1..20 {
-            builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
+        builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
 
-            builder::calculate_charge(&mut block.block);
-        }
+        builder::calculate_charge(&mut block.block);
     });
 }
 
