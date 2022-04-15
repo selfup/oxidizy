@@ -56,9 +56,9 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup)
         .add_system(update_block_atoms)
-        .add_system(update_block_spheres)
+        .add_system(update_block_spheres.after(update_block_atoms))
+        .add_system(update_sphere_positions.after(update_block_spheres))
         .add_system(camera_movement)
-        .add_system(random_movement)
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
 }
@@ -112,7 +112,7 @@ fn setup(
 
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 0.25,
+        brightness: 0.35,
     });
 
     let up = Vec3::new(0.0, 1.0, 0.0);
@@ -126,6 +126,16 @@ fn setup(
         .insert(CameraMatcher());
 }
 
+fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMatcher>) {
+    query.par_for_each_mut(&pool, CHUNK_SIZE, |mut block| {
+        for _n in 1..20 {
+            builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
+
+            builder::calculate_charge(&mut block.block);
+        }
+    });
+}
+
 fn update_block_spheres(
     pool: Res<ComputeTaskPool>,
     charged_atom_materials: Res<ChargedAtomMaterials>,
@@ -137,11 +147,16 @@ fn update_block_spheres(
     });
 }
 
-fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMatcher>) {
-    query.par_for_each_mut(&pool, CHUNK_SIZE, |mut block| {
-        builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
+fn update_sphere_positions(
+    pool: Res<ComputeTaskPool>,
+    mut query: Query<(&mut Transform, &BlockMatcher)>,
+) {
+    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut transform, block_matcher)| {
+        let block = block_matcher.block;
 
-        builder::calculate_charge(&mut block.block);
+        let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+
+        transform.translation = new_translation;
     });
 }
 
@@ -159,16 +174,6 @@ fn camera_movement(
             transform.translation += input_dir * (time.delta_seconds_f64() * 50.0) as f32;
         }
     }
-}
-
-fn random_movement(pool: Res<ComputeTaskPool>, mut query: Query<(&mut Transform, &BlockMatcher)>) {
-    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut transform, block_matcher)| {
-        let block = block_matcher.block;
-
-        let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
-
-        transform.translation = new_translation;
-    });
 }
 
 fn get_input_dir(keyboard_input: Res<Input<KeyCode>>) -> Vec3 {
