@@ -79,7 +79,7 @@ Universe built
 --------------------------------
 Calculating charge of field..
 --------------------------------
-Field is Anionic
+Field is Cationic
 --------------------------------
 Atoms: 97336000
 Baryons: 22971296000
@@ -88,9 +88,9 @@ Quarks: 68913888000
 Total objects in memory: 91982520000
 --------------------------------
 
-real    0m10.562s
+real    0m9.096s
 user    0m0.000s
-sys     0m0.000s
+sys     0m0.015s
 ```
 
 ### Repos
