@@ -2,7 +2,6 @@ extern crate rand;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy::tasks::prelude::*;
 use std::env;
 
 const CHUNK_SIZE: usize = 128;
@@ -118,7 +117,7 @@ fn setup(
     let up = Vec3::new(0.0, 1.0, 0.0);
 
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn_bundle(Camera3dBundle {
             transform: Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
                 .looking_at(Vec3::default(), up),
             ..Default::default()
@@ -126,8 +125,8 @@ fn setup(
         .insert(CameraMatcher());
 }
 
-fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMatcher>) {
-    query.par_for_each_mut(&pool, CHUNK_SIZE, |mut block| {
+fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
+    query.par_for_each_mut(CHUNK_SIZE, |mut block| {
         builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
 
         builder::calculate_charge(&mut block.block);
@@ -135,21 +134,17 @@ fn update_block_atoms(pool: Res<ComputeTaskPool>, mut query: Query<&mut BlockMat
 }
 
 fn update_block_spheres(
-    pool: Res<ComputeTaskPool>,
     charged_atom_materials: Res<ChargedAtomMaterials>,
     mut query: Query<(&mut Handle<Material>, &mut BlockMatcher)>,
 ) {
-    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut material_handle, block_matcher)| {
+    query.par_for_each_mut(CHUNK_SIZE, |(mut material_handle, block_matcher)| {
         let r = block_matcher.block.charge;
         *material_handle = charged_atom_materials.get(r).clone();
     });
 }
 
-fn update_sphere_positions(
-    pool: Res<ComputeTaskPool>,
-    mut query: Query<(&mut Transform, &BlockMatcher)>,
-) {
-    query.par_for_each_mut(&pool, CHUNK_SIZE, |(mut transform, block_matcher)| {
+fn update_sphere_positions(mut query: Query<(&mut Transform, &BlockMatcher)>) {
+    query.par_for_each_mut(CHUNK_SIZE, |(mut transform, block_matcher)| {
         let block = block_matcher.block;
 
         let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);

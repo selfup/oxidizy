@@ -5,6 +5,6 @@ authors = ["selfup <boudinot.regis@yahoo.com>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.8.4"
-rayon = "1.5.0"
+rand = "0.8.5"
+rayon = "1.5.3"
 colored = "2"
