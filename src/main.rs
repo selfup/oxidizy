@@ -12,7 +12,6 @@ use unigen::builder;
 type Material = StandardMaterial;
 
 #[allow(unused_imports)]
-
 #[derive(Resource)]
 struct ChargedAtomMaterials {
     materials: Vec<Handle<Material>>,
