@@ -11,4 +11,4 @@ members = ["crates/*"]
 unigen = { path = "crates/unigen", version = "0.1.0", default-features = false }
 
 rand = "0.8.5"
-bevy = "0.8.0"
+bevy = "0.9.1"

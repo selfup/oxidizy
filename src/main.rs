@@ -13,6 +13,7 @@ type Material = StandardMaterial;
 
 #[allow(unused_imports)]
 
+#[derive(Resource)]
 struct ChargedAtomMaterials {
     materials: Vec<Handle<Material>>,
 }
@@ -98,7 +99,7 @@ fn setup(
         let r = block.charge;
 
         commands
-            .spawn_bundle(PbrBundle {
+            .spawn(PbrBundle {
                 mesh: mesh_handle.clone(),
                 material: charged_atom_materials.get(r).clone(),
                 transform: Transform::from_xyz(x, y, z),
@@ -117,7 +118,7 @@ fn setup(
     let up = Vec3::new(0.0, 1.0, 0.0);
 
     commands
-        .spawn_bundle(Camera3dBundle {
+        .spawn(Camera3dBundle {
             transform: Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
                 .looking_at(Vec3::default(), up),
             ..Default::default()
