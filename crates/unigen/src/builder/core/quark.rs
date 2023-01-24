@@ -23,7 +23,6 @@ impl Quark {
     }
 
     pub const fn data(quark: Quark) -> QuarkData {
-        #[allow(unreachable_patterns)]
         match (quark.color, quark.electric_charge) {
             (StrongCharge::Red, ElectricCharge::NegativeOneThird) => QuarkData::RedDownQuark,
             (StrongCharge::Red, ElectricCharge::PositiveTwoThirds) => QuarkData::RedUpQuark,

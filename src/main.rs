@@ -157,20 +157,30 @@ fn camera_movement(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(&mut Transform, &mut CameraMatcher)>,
+    block_query: Query<&BlockMatcher>,
 ) {
-    let input_dir = get_input_dir(keyboard_input);
+    let results = get_input_dir(keyboard_input, block_query);
+    let input_dir = results.0;
+    let snap_to_grid = results.1;
 
-    if input_dir.length() > 0. {
+    if snap_to_grid {
         for (mut transform, _camera) in query.iter_mut() {
-            let input_dir = (transform.rotation * input_dir).normalize();
+            transform.translation = input_dir;
+        }
+    } else {
+        if input_dir.length() > 0. {
+            for (mut transform, _camera) in query.iter_mut() {
+                let input_dir = (transform.rotation * input_dir).normalize();
 
-            transform.translation += input_dir * (time.delta_seconds_f64() * 50.0) as f32;
+                transform.translation += input_dir * (time.delta_seconds_f64() * 50.0) as f32;
+            }
         }
     }
 }
 
-fn get_input_dir(keyboard_input: Res<Input<KeyCode>>) -> Vec3 {
+fn get_input_dir(keyboard_input: Res<Input<KeyCode>>, query: Query<&BlockMatcher>) -> (Vec3, bool) {
     let mut input_dir = Vec3::default();
+    let mut snap_to_universe = false;
 
     if keyboard_input.pressed(KeyCode::W) {
         let forward = Vec3::new(0.0, 0.0, 1.0);
@@ -202,5 +212,28 @@ fn get_input_dir(keyboard_input: Res<Input<KeyCode>>) -> Vec3 {
         input_dir -= up;
     }
 
-    input_dir
+    if keyboard_input.pressed(KeyCode::F) {
+        let mut known_location = Vec3::default();
+
+        for block in query.into_iter() {
+            if block.block.id == 0 {
+                info!(
+                    "block_id_zero x: {} - y: {} - z: {}",
+                    block.block.x, block.block.y, block.block.z
+                );
+
+                known_location.x = block.block.x as f32;
+                known_location.y = block.block.y as f32;
+                known_location.z = block.block.z as f32;
+
+                snap_to_universe = true;
+
+                break;
+            }
+        }
+
+        input_dir = known_location;
+    }
+
+    (input_dir, snap_to_universe)
 }
