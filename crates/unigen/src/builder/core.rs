@@ -18,7 +18,7 @@ pub struct Block {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Atom {
-    pub electrons: u32,
+    pub electrons: u8,
     pub nucleus: Nucleus,
 }
 

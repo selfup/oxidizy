@@ -2,12 +2,12 @@ use super::quark::{Quark, QuarkData};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Protons {
-    pub count: u32,
+    pub count: u8,
     pub protons: [ProtonData; 118],
 }
 
 impl Protons {
-    pub fn new(count: u32) -> Self {
+    pub fn new(count: u8) -> Self {
         let mut protons = [ProtonData::Unknown; 118];
 
         protons[0..(count as usize)]

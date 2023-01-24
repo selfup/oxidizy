@@ -9,18 +9,18 @@ use self::core::{neutron, proton};
 pub struct Blocks {}
 const CHUNK_SIZE: usize = 128;
 
-fn index_to_xyz(size: u32, idx: u32) -> (u32, u32, u32) {
-    let sz_2 = size * size;
+fn index_to_xyz(parsed_size: u32, idx: u32) -> (u32, u32, u32) {
+    let sz_2 = parsed_size * parsed_size;
     let x = idx / sz_2;
     let w = idx % sz_2;
-    let y = w / size;
-    let z = w % size;
+    let y = w / parsed_size;
+    let z = w % parsed_size;
     (x, y, z)
 }
 
 impl Blocks {
     pub fn initialize_universe(parsed_size: u32) -> Vec<core::Block> {
-        let total_size = parsed_size
+        let total_size: u32 = parsed_size
             .checked_mul(parsed_size.checked_mul(parsed_size).unwrap())
             .unwrap();
 
@@ -30,8 +30,8 @@ impl Blocks {
         println!("Threads: {}\nBuilding..", rayon::current_num_threads());
 
         ret.par_extend((0..total_size).into_par_iter().map(|i| {
-            let (x, y, z) = index_to_xyz(parsed_size, i);
-            let (electrons, protons, neutrons): (u32, u32, u32) = (0, 0, 0);
+            let (x, y, z) = index_to_xyz(parsed_size as u32, i);
+            let (electrons, protons, neutrons): (u8, u8, u8) = (0, 0, 0);
 
             let generated_protons = proton::Protons::new(protons);
             let generated_neutrons = neutron::Neutrons::new(neutrons);
@@ -66,30 +66,29 @@ impl Blocks {
             s.spawn(|_| {
                 neutron[0] = universe
                     .par_iter()
-                    .map(|i| i.atom.nucleus.baryon.neutrons.count)
+                    .map(|i| i.atom.nucleus.baryon.neutrons.count as u32)
                     .sum();
             });
 
             s.spawn(|_| {
                 proton[0] = universe
                     .par_iter()
-                    .map(|i| i.atom.nucleus.baryon.protons.count)
+                    .map(|i| i.atom.nucleus.baryon.protons.count as u32)
                     .sum();
             });
 
             s.spawn(|_| {
-                electron[0] = universe.par_iter().map(|i| i.atom.electrons).sum();
+                electron[0] = universe.par_iter().map(|i| i.atom.electrons as u32).sum();
             });
         });
     }
 
     pub fn charge_of_field(proton: &mut [u32; 1], electron: &mut [u32; 1], u: u32) {
         let size: u32 = u * u * u;
-        let cast_size: u32 = size as u32;
 
-        if proton[0] == cast_size && electron[0] == cast_size {
+        if proton[0] == size && electron[0] == size {
             println!("Field is Netural");
-        } else if (proton[0] > cast_size) && (electron[0] < proton[0]) {
+        } else if (proton[0] > size) && (electron[0] < proton[0]) {
             println!("Field is Cationic");
         } else {
             println!("Field is Anionic");
@@ -118,7 +117,7 @@ impl Blocks {
 #[inline]
 pub fn calculate_charge(block: &mut core::Block) {
     use std::cmp::Ordering::*;
-    block.charge = match u32::cmp(
+    block.charge = match u8::cmp(
         &block.atom.nucleus.baryon.protons.count,
         &block.atom.electrons,
     ) {
@@ -129,7 +128,7 @@ pub fn calculate_charge(block: &mut core::Block) {
 }
 
 pub fn mutate_blocks_with_new_particles<R: Rng>(rng: &mut R, block: &mut core::Block) {
-    let (electrons, protons, neutrons, rotation): (u32, u32, u32, u8) = (
+    let (electrons, protons, neutrons, rotation): (u8, u8, u8, u8) = (
         rng.gen_range(0..118),
         rng.gen_range(0..118),
         rng.gen_range(0..118),
@@ -178,7 +177,7 @@ pub fn generate_universe(parsed_size: u32) -> Vec<core::Block> {
     println!("Calculating charge of field..");
     println!("{}", &separator.yellow().bold());
 
-    Blocks::charge_of_field(&mut proton, &mut electron, parsed_size as u32);
+    Blocks::charge_of_field(&mut proton, &mut electron, parsed_size);
     Blocks::atom_charge(&mut generated_universe);
 
     println!("{}", &separator.green().bold());
