@@ -215,7 +215,7 @@ fn get_input_dir(keyboard_input: Res<Input<KeyCode>>, query: Query<&BlockMatcher
     if keyboard_input.pressed(KeyCode::F) {
         let mut known_location = Vec3::default();
 
-        for block in query.into_iter() {
+        for block in &query {
             if block.block.id == 0 {
                 info!(
                     "block_id_zero x: {} - y: {} - z: {}",
