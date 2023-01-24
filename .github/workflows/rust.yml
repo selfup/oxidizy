@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: OS Deps
       run: "sudo apt-get update \
               && sudo apt-get install \
                 g++ pkg-config libx11-dev \
                 libasound2-dev libudev-dev \
                   -y"
-    - uses: Swatinem/rust-cache@v1.3.0
+    - uses: Swatinem/rust-cache@v2
     - name: Tests
       run: ./scripts/ci.sh
