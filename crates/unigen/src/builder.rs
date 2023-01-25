@@ -30,7 +30,7 @@ impl Blocks {
         println!("Threads: {}\nBuilding..", rayon::current_num_threads());
 
         ret.par_extend((0..total_size).into_par_iter().map(|i| {
-            let (x, y, z) = index_to_xyz(parsed_size as u32, i);
+            let (x, y, z) = index_to_xyz(parsed_size, i);
             let (electrons, protons, neutrons): (u8, u8, u8) = (0, 0, 0);
 
             let generated_protons = proton::Protons::new(protons);
