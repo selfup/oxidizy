@@ -18,16 +18,16 @@ echo 'running tests'
 
 echo 'ci success!'
 
-sleep 1s
+echo 'running dev.generate'
 
-echo 'running generate with arg'
+./scripts/dev.generate.sh
+./scripts/dev.generate.sh 20
 
-./scripts/generate.sh 50
+echo 'dev.generate success!'
 
-echo 'generate with arg success!'
-
-echo 'running generate without arg'
+echo 'running generate arg'
 
 ./scripts/generate.sh
+./scripts/generate.sh 20
 
-echo 'generate without arg success!'
+echo 'generate success!'

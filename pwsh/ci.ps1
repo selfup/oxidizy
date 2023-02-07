@@ -10,18 +10,20 @@ Write-Output 'format success!'
 
 Write-Output 'running tests'
 
-./scripts/test.ps1
+.\pwsh\test.ps1
 
 Write-Output 'ci success!'
 
-Write-Output 'running generate with arg'
+Write-Output 'running dev.generate'
 
-./scripts/generate.ps1 -size 50
+.\pwsh\dev.generate.ps1
+.\pwsh\dev.generate.ps1 20
 
 Write-Output 'generate with arg success!'
 
 Write-Output 'running generate without arg'
 
-./scripts/generate.sh
+.\pwsh\generate.ps1
+.\pwsh\generate.ps1 20
 
 Write-Output 'generate without arg success!'
