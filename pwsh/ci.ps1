@@ -6,24 +6,26 @@ Write-Output 'running rustfmt'
 
 cargo fmt --all -- --check
 
-Write-Output 'format success!'
+Write-Output 'rustfmt success!'
 
 Write-Output 'running tests'
 
 .\pwsh\test.ps1
 
-Write-Output 'ci success!'
+Write-Output 'tests success!'
 
 Write-Output 'running dev.generate'
 
 .\pwsh\dev.generate.ps1
 .\pwsh\dev.generate.ps1 20
 
-Write-Output 'generate with arg success!'
+Write-Output 'dev.generate success!'
 
-Write-Output 'running generate without arg'
+Write-Output 'running generate'
 
 .\pwsh\generate.ps1
 .\pwsh\generate.ps1 20
 
-Write-Output 'generate without arg success!'
+Write-Output 'generate success!'
+
+Write-Output 'ci success!'

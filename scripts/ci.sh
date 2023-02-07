@@ -10,13 +10,13 @@ echo 'running rustfmt'
 
 cargo fmt --all -- --check
 
-echo 'format success!'
+echo 'rustfmt success!'
 
 echo 'running tests'
 
 ./scripts/test.sh
 
-echo 'ci success!'
+echo 'tests success!'
 
 echo 'running dev.generate'
 
@@ -25,9 +25,11 @@ echo 'running dev.generate'
 
 echo 'dev.generate success!'
 
-echo 'running generate arg'
+echo 'running generate'
 
 ./scripts/generate.sh
 ./scripts/generate.sh 20
 
 echo 'generate success!'
+
+echo 'ci success!'
