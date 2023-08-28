@@ -4,7 +4,6 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use std::env;
 
-const CHUNK_SIZE: usize = 128;
 const DEFAULT_SIZE: u32 = 30;
 
 use unigen::builder;
@@ -49,15 +48,22 @@ impl ChargedAtomMaterials {
 
 fn main() {
     App::new()
-        .insert_resource(Msaa { samples: 4 })
-        .add_plugins(DefaultPlugins)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_startup_system(setup)
-        .add_system(update_block_atoms)
-        .add_system(update_block_spheres.after(update_block_atoms))
-        .add_system(update_sphere_positions.after(update_block_spheres))
-        .add_system(camera_movement)
+        .insert_resource(Msaa::default())
+        .add_plugins((
+            DefaultPlugins,
+            LogDiagnosticsPlugin::default(),
+            FrameTimeDiagnosticsPlugin::default(),
+        ))
+        .add_systems(Startup, setup)
+        .add_systems(
+            Update,
+            (
+                update_block_atoms,
+                update_block_spheres,
+                update_sphere_positions,
+                camera_movement,
+            ),
+        )
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .run();
 }
@@ -85,9 +91,9 @@ fn setup(
 
     let blocks = builder::generate_universe(parsed_size);
 
-    let mesh_handle = meshes.add(Mesh::from(shape::Icosphere {
+    let mesh_handle = meshes.add(Mesh::from(shape::UVSphere {
         radius: 0.15,
-        subdivisions: 1,
+        ..default()
     }));
 
     for block in blocks {
@@ -126,7 +132,7 @@ fn setup(
 }
 
 fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
-    query.par_for_each_mut(CHUNK_SIZE, |mut block| {
+    query.par_iter_mut().for_each_mut(|mut block| {
         builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
 
         builder::calculate_charge(&mut block.block);
@@ -137,20 +143,24 @@ fn update_block_spheres(
     charged_atom_materials: Res<ChargedAtomMaterials>,
     mut query: Query<(&mut Handle<Material>, &mut BlockMatcher)>,
 ) {
-    query.par_for_each_mut(CHUNK_SIZE, |(mut material_handle, block_matcher)| {
-        let r = block_matcher.block.charge;
-        *material_handle = charged_atom_materials.get(r).clone();
-    });
+    query
+        .par_iter_mut()
+        .for_each_mut(|(mut material_handle, block_matcher)| {
+            let r = block_matcher.block.charge;
+            *material_handle = charged_atom_materials.get(r).clone();
+        });
 }
 
 fn update_sphere_positions(mut query: Query<(&mut Transform, &BlockMatcher)>) {
-    query.par_for_each_mut(CHUNK_SIZE, |(mut transform, block_matcher)| {
-        let block = block_matcher.block;
+    query
+        .par_iter_mut()
+        .for_each_mut(|(mut transform, block_matcher)| {
+            let block = block_matcher.block;
 
-        let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+            let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
 
-        transform.translation = new_translation;
-    });
+            transform.translation = new_translation;
+        });
 }
 
 fn camera_movement(
@@ -207,7 +217,7 @@ fn get_input_dir(keyboard_input: Res<Input<KeyCode>>, query: Query<&BlockMatcher
         input_dir += up;
     }
 
-    if keyboard_input.pressed(KeyCode::LShift) {
+    if keyboard_input.pressed(KeyCode::ShiftLeft) {
         let up = Vec3::new(0.0, 1.0, 0.0);
         input_dir -= up;
     }
