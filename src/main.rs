@@ -132,7 +132,7 @@ fn setup(
 }
 
 fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
-    query.par_iter_mut().for_each_mut(|mut block| {
+    query.par_iter_mut().for_each(|mut block| {
         builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
 
         builder::calculate_charge(&mut block.block);
@@ -145,7 +145,7 @@ fn update_block_spheres(
 ) {
     query
         .par_iter_mut()
-        .for_each_mut(|(mut material_handle, block_matcher)| {
+        .for_each(|(mut material_handle, block_matcher)| {
             let r = block_matcher.block.charge;
             *material_handle = charged_atom_materials.get(r).clone();
         });
@@ -154,7 +154,7 @@ fn update_block_spheres(
 fn update_sphere_positions(mut query: Query<(&mut Transform, &BlockMatcher)>) {
     query
         .par_iter_mut()
-        .for_each_mut(|(mut transform, block_matcher)| {
+        .for_each(|(mut transform, block_matcher)| {
             let block = block_matcher.block;
 
             let new_translation = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
