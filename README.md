@@ -88,7 +88,7 @@ Quarks: 68913888000
 Total objects in memory: 91982520000
 --------------------------------
 
-real    0m9.096s
+real    0m6.331s
 user    0m0.000s
 sys     0m0.015s
 ```
