@@ -1,6 +1,7 @@
 extern crate rand;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::prelude::*;
 use std::env;
 
@@ -27,7 +28,7 @@ impl ChargedAtomMaterials {
                     .map(|r| {
                         let color: Color = Color::rgb(r as f32, 0., 1.);
 
-                        asset_server.add(color.into())
+                        asset_server.add(color)
                     })
                     .collect()
             },
@@ -50,7 +51,7 @@ fn main() {
     App::new()
         .insert_resource(Msaa::default())
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(ImagePlugin::default_nearest()),
             LogDiagnosticsPlugin::default(),
             FrameTimeDiagnosticsPlugin::default(),
         ))
@@ -81,6 +82,29 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     asset_server: ResMut<Assets<Material>>,
 ) {
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: light_consts::lux::OVERCAST_DAY,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            rotation: Quat::from_rotation_x(-3.14 / 4.),
+            ..default()
+        },
+        // The default cascade config is designed to handle large scenes.
+        // As this example has a much smaller world, we can tighten the shadow
+        // bounds for better visual quality.
+        cascade_shadow_config: CascadeShadowConfigBuilder {
+            first_cascade_far_bound: 1.0,
+            maximum_distance: 1.0,
+            ..default()
+        }
+        .into(),
+        ..default()
+    });
+
     let parsed_size: u32 = if let Some(arg) = env::args().nth(1) {
         arg.trim().parse().unwrap()
     } else {
@@ -91,10 +115,7 @@ fn setup(
 
     let blocks = builder::generate_universe(parsed_size);
 
-    let mesh_handle = meshes.add(Mesh::from(shape::UVSphere {
-        radius: 0.15,
-        ..default()
-    }));
+    let mesh_handle = meshes.add(Sphere::new(0.15).mesh().ico(5).unwrap());
 
     for block in blocks {
         let x = block.x as f32;
@@ -165,7 +186,7 @@ fn update_sphere_positions(mut query: Query<(&mut Transform, &BlockMatcher)>) {
 
 fn camera_movement(
     time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(&mut Transform, &mut CameraMatcher)>,
     block_query: Query<&BlockMatcher>,
 ) {
@@ -188,26 +209,26 @@ fn camera_movement(
     }
 }
 
-fn get_input_dir(keyboard_input: Res<Input<KeyCode>>, query: Query<&BlockMatcher>) -> (Vec3, bool) {
+fn get_input_dir(keyboard_input: Res<ButtonInput<KeyCode>>, query: Query<&BlockMatcher>) -> (Vec3, bool) {
     let mut input_dir = Vec3::default();
     let mut snap_to_universe = false;
 
-    if keyboard_input.pressed(KeyCode::W) {
+    if keyboard_input.pressed(KeyCode::KeyW) {
         let forward = Vec3::new(0.0, 0.0, 1.0);
         input_dir -= forward;
     }
 
-    if keyboard_input.pressed(KeyCode::S) {
+    if keyboard_input.pressed(KeyCode::KeyS) {
         let forward = Vec3::new(0.0, 0.0, 1.0);
         input_dir += forward;
     }
 
-    if keyboard_input.pressed(KeyCode::A) {
+    if keyboard_input.pressed(KeyCode::KeyA) {
         let right = Vec3::new(1.0, 0.0, 0.0);
         input_dir -= right;
     }
 
-    if keyboard_input.pressed(KeyCode::D) {
+    if keyboard_input.pressed(KeyCode::KeyD) {
         let right = Vec3::new(1.0, 0.0, 0.0);
         input_dir += right;
     }
@@ -222,7 +243,7 @@ fn get_input_dir(keyboard_input: Res<Input<KeyCode>>, query: Query<&BlockMatcher
         input_dir -= up;
     }
 
-    if keyboard_input.pressed(KeyCode::F) {
+    if keyboard_input.pressed(KeyCode::KeyF) {
         let mut known_location = Vec3::default();
 
         for block in &query {
