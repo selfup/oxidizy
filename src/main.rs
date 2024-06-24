@@ -209,7 +209,10 @@ fn camera_movement(
     }
 }
 
-fn get_input_dir(keyboard_input: Res<ButtonInput<KeyCode>>, query: Query<&BlockMatcher>) -> (Vec3, bool) {
+fn get_input_dir(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    query: Query<&BlockMatcher>,
+) -> (Vec3, bool) {
     let mut input_dir = Vec3::default();
     let mut snap_to_universe = false;
 
