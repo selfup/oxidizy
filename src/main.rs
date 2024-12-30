@@ -83,7 +83,7 @@ fn setup(
 ) {
     commands.spawn(DirectionalLight {
         illuminance: light_consts::lux::OVERCAST_DAY,
-        shadows_enabled: true,
+        shadows_enabled: false,
         ..default()
     });
 
@@ -92,15 +92,6 @@ fn setup(
         rotation: Quat::from_rotation_x(-3.14 / 4.),
         ..default()
     });
-
-    // The default cascade config is designed to handle large scenes.
-    // As this example has a much smaller world, we can tighten the shadow
-    // bounds for better visual quality.
-    // commands.spawn(CascadeShadowConfigBuilder {
-    //     first_cascade_far_bound: 1.0,
-    //     maximum_distance: 1.0,
-    //     ..default()
-    // });
 
     let parsed_size: u32 = if let Some(arg) = env::args().nth(1) {
         arg.trim().parse().unwrap()
@@ -158,14 +149,16 @@ fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
 
 fn update_block_spheres(
     charged_atom_materials: Res<ChargedAtomMaterials>,
-    mut query: Query<(&MeshMaterial3d<StandardMaterial>, &mut BlockMatcher)>,
+    mut query: Query<(&mut MeshMaterial3d<StandardMaterial>, &mut BlockMatcher)>,
 ) {
     query
         .par_iter_mut()
-        .for_each(|(mut _material_handle, block_matcher)| {
+        .for_each(|(mut material_handle, block_matcher)| {
             let r = block_matcher.block.charge;
 
-            _material_handle = &MeshMaterial3d(charged_atom_materials.get(r).clone());
+            let _id = material_handle.id();
+
+            *material_handle = MeshMaterial3d(charged_atom_materials.get(r).clone());
         });
 }
 
