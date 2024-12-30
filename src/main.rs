@@ -1,7 +1,6 @@
 extern crate rand;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::prelude::*;
 use std::env;
 
@@ -18,7 +17,7 @@ struct ChargedAtomMaterials {
 }
 
 impl ChargedAtomMaterials {
-    fn new(mut asset_server: ResMut<Assets<Material>>) -> Self {
+    fn new(mut asset_server: ResMut<Assets<StandardMaterial>>) -> Self {
         let lower_bound: i8 = 0;
         let upper_bound: i8 = 3;
 
@@ -26,10 +25,11 @@ impl ChargedAtomMaterials {
             materials: {
                 (lower_bound..upper_bound)
                     .map(|r| {
-                        let color: Color = Color::rgb(r as f32, 0., 1.);
+                        let color: Color = Color::srgb(r as f32, 0., 1.);
 
                         asset_server.add(color)
                     })
+                    .into_iter()
                     .collect()
             },
         }
@@ -49,7 +49,6 @@ impl ChargedAtomMaterials {
 
 fn main() {
     App::new()
-        .insert_resource(Msaa::default())
         .add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             LogDiagnosticsPlugin::default(),
@@ -65,7 +64,7 @@ fn main() {
                 camera_movement,
             ),
         )
-        .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+        .insert_resource(ClearColor(Color::srgb(0.04, 0.04, 0.04)))
         .run();
 }
 
@@ -82,28 +81,26 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     asset_server: ResMut<Assets<Material>>,
 ) {
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            illuminance: light_consts::lux::OVERCAST_DAY,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-3.14 / 4.),
-            ..default()
-        },
-        // The default cascade config is designed to handle large scenes.
-        // As this example has a much smaller world, we can tighten the shadow
-        // bounds for better visual quality.
-        cascade_shadow_config: CascadeShadowConfigBuilder {
-            first_cascade_far_bound: 1.0,
-            maximum_distance: 1.0,
-            ..default()
-        }
-        .into(),
+    commands.spawn(DirectionalLight {
+        illuminance: light_consts::lux::OVERCAST_DAY,
+        shadows_enabled: true,
         ..default()
     });
+
+    commands.spawn(Transform {
+        translation: Vec3::new(0.0, 2.0, 0.0),
+        rotation: Quat::from_rotation_x(-3.14 / 4.),
+        ..default()
+    });
+
+    // The default cascade config is designed to handle large scenes.
+    // As this example has a much smaller world, we can tighten the shadow
+    // bounds for better visual quality.
+    // commands.spawn(CascadeShadowConfigBuilder {
+    //     first_cascade_far_bound: 1.0,
+    //     maximum_distance: 1.0,
+    //     ..default()
+    // });
 
     let parsed_size: u32 = if let Some(arg) = env::args().nth(1) {
         arg.trim().parse().unwrap()
@@ -125,12 +122,11 @@ fn setup(
         let r = block.charge;
 
         commands
-            .spawn(PbrBundle {
-                mesh: mesh_handle.clone(),
-                material: charged_atom_materials.get(r).clone(),
-                transform: Transform::from_xyz(x, y, z),
-                ..Default::default()
-            })
+            .spawn((
+                Mesh3d(mesh_handle.clone()),
+                MeshMaterial3d(charged_atom_materials.get(r).clone()),
+                Transform::from_xyz(x, y, z),
+            ))
             .insert(BlockMatcher { block });
     }
 
@@ -144,11 +140,11 @@ fn setup(
     let up = Vec3::new(0.0, 1.0, 0.0);
 
     commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
+        .spawn((
+            Camera3d::default(),
+            Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
                 .looking_at(Vec3::default(), up),
-            ..Default::default()
-        })
+        ))
         .insert(CameraMatcher());
 }
 
@@ -162,13 +158,14 @@ fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
 
 fn update_block_spheres(
     charged_atom_materials: Res<ChargedAtomMaterials>,
-    mut query: Query<(&mut Handle<Material>, &mut BlockMatcher)>,
+    mut query: Query<(&MeshMaterial3d<StandardMaterial>, &mut BlockMatcher)>,
 ) {
     query
         .par_iter_mut()
-        .for_each(|(mut material_handle, block_matcher)| {
+        .for_each(|(mut _material_handle, block_matcher)| {
             let r = block_matcher.block.charge;
-            *material_handle = charged_atom_materials.get(r).clone();
+
+            _material_handle = &MeshMaterial3d(charged_atom_materials.get(r).clone());
         });
 }
 
@@ -203,7 +200,7 @@ fn camera_movement(
             for (mut transform, _camera) in query.iter_mut() {
                 let input_dir = (transform.rotation * input_dir).normalize();
 
-                transform.translation += input_dir * (time.delta_seconds_f64() * 50.0) as f32;
+                transform.translation += input_dir * (time.delta_secs_f64() * 50.0) as f32;
             }
         }
     }

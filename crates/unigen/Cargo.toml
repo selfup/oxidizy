@@ -7,4 +7,4 @@ edition = "2018"
 [dependencies]
 rand = "0.8.5"
 rayon = "1.10.0"
-colored = "2.0.4"
+colored = "2.2.0"
