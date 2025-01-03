@@ -21,40 +21,40 @@ More to come :rocket:
 
 `cargo run --release <n>`
 
-Example Use:
+Example Use (1.728 million atoms rendered on screen):
 
 ```
-$ ./scripts/rel.run.sh 30
-+ cargo run -q --release 30
-2022-03-04T01:33:07.274214Z  INFO bevy_render::renderer: AdapterInfo { name: "NVIDIA GeForce GTX 1660 Ti", vendor: 4318, device: 8578, device_type: DiscreteGpu, backend: Vulkan }
+$ ./scripts/rel.run.sh 120
++ [[ 120 != '' ]]
++ cargo run -q --release 120
+2025-01-03T03:02:58.363556Z  INFO bevy_diagnostic::system_information_diagnostics_plugin::internal: SystemInfo { os: "Windows 10 Pro", kernel: "19045", cpu: "AMD Ryzen 7 3800X 8-Core Processor", core_count: "8", memory: "31.9 GiB" }
+2025-01-03T03:02:58.670692Z  INFO bevy_render::renderer: AdapterInfo { name: "NVIDIA GeForce RTX 3060 Ti", vendor: 4318, device: 9353, device_type: DiscreteGpu, driver: "NVIDIA", driver_info: "566.36", backend: Vulkan }
+2025-01-03T03:02:58.860730Z  INFO bevy_winit::system: Creating new window "App" (0v1#4294967296)
 --------------------------------
 Threads: 16
-Building..
+Building.. 
 --------------------------------
 Universe built
 --------------------------------
 Calculating charge of field..
 --------------------------------
-Field is Cationic
+Field is Anionic
 --------------------------------
-Atoms: 27000
-Baryons: 6372000
-Quarks: 19116000
+Atoms: 1728000
+Baryons: 407808000
+Quarks: 1223424000
 --------------------------------
-Total objects in memory: 25515000
+Total objects in memory: 1632960000
 --------------------------------
-
-...
-
-2022-03-04T01:33:24.395275Z  INFO bevy diagnostic: frame_time  :    0.011610s (avg 0.012227s)
-2022-03-04T01:33:24.395534Z  INFO bevy diagnostic: fps         :   82.042901  (avg 82.155862)
-2022-03-04T01:33:24.395819Z  INFO bevy diagnostic: frame_count :  801.000000  (avg 801.0000)      
-2022-03-04T01:33:25.388228Z  INFO bevy diagnostic: frame_time  :    0.012523s (avg 0.012366s)
-2022-03-04T01:33:25.388604Z  INFO bevy diagnostic: fps         :   81.464006  (avg 81.372364)
-2022-03-04T01:33:25.389062Z  INFO bevy diagnostic: frame_count :  882.000000  (avg 882.0000)      
-2022-03-04T01:33:26.393287Z  INFO bevy diagnostic: frame_time  :    0.012117s (avg 0.012703s)
-2022-03-04T01:33:26.393578Z  INFO bevy diagnostic: fps         :   81.429777  (avg 81.317298)
-2022-03-04T01:33:26.393890Z  INFO bevy diagnostic: frame_count :  963.000000  (avg 963.000000)  
+2025-01-03T03:03:39.747135Z  INFO bevy diagnostic: fps        :    1.887225   (avg 6.317538)
+2025-01-03T03:03:39.747410Z  INFO bevy diagnostic: frame_time :  529.878600ms (avg 259.353702ms)
+2025-01-03T03:03:39.747693Z  INFO bevy diagnostic: frame_count:  170.000000   (avg 110.500000)
+2025-01-03T03:03:40.813600Z  INFO bevy diagnostic: fps        :    1.867156   (avg 6.206554)
+2025-01-03T03:03:40.813866Z  INFO bevy diagnostic: frame_time :  535.573900ms (avg 266.200975ms)
+2025-01-03T03:03:40.814134Z  INFO bevy diagnostic: frame_count:  172.000000   (avg 112.500000)
+2025-01-03T03:03:41.873834Z  INFO bevy diagnostic: fps        :    1.875142   (avg 6.096975)
+2025-01-03T03:03:41.874101Z  INFO bevy diagnostic: frame_time :  533.292900ms (avg 273.076387ms)
+2025-01-03T03:03:41.874380Z  INFO bevy diagnostic: frame_count:  174.000000   (avg 114.500000)
 ```
 
 ![image](https://user-images.githubusercontent.com/9837366/99208853-dce09380-277e-11eb-88be-e07d2044b10c.png)
@@ -79,7 +79,7 @@ Universe built
 --------------------------------
 Calculating charge of field..
 --------------------------------
-Field is Cationic
+Field is Anionic
 --------------------------------
 Atoms: 97336000
 Baryons: 22971296000
@@ -88,7 +88,7 @@ Quarks: 68913888000
 Total objects in memory: 91982520000
 --------------------------------
 
-real    0m9.096s
+real    0m6.070s
 user    0m0.000s
 sys     0m0.015s
 ```
