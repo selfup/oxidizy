@@ -57,7 +57,7 @@ Total objects in memory: 1632960000
 2025-01-03T03:03:41.874380Z  INFO bevy diagnostic: frame_count:  174.000000   (avg 114.500000)
 ```
 
-![image](https://user-images.githubusercontent.com/9837366/99208853-dce09380-277e-11eb-88be-e07d2044b10c.png)
+![image](https://github.com/user-attachments/assets/dd767f05-5a4d-4304-9904-991d68ebb261)
 
 ### Sans UI
 
