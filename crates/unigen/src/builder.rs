@@ -132,7 +132,7 @@ pub fn mutate_blocks_with_new_particles<R: Rng>(rng: &mut R, block: &mut core::B
         rng.gen_range(0..118),
         rng.gen_range(0..118),
         rng.gen_range(0..118),
-        rng.gen_range(1..6),
+        rng.gen_range(1..7),
     );
 
     match rotation {
