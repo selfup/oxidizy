@@ -1,6 +1,6 @@
 [package]
 name = "oxidizy"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["selfup <boudinot.regis@yahoo.com>"]
 edition = "2021"
 
@@ -8,7 +8,6 @@ edition = "2021"
 members = ["crates/*"]
 
 [dependencies]
-unigen = { path = "crates/unigen", version = "0.1.0", default-features = false }
+unigen = { path = "crates/unigen", version = "0.2.0", default-features = false }
 
-rand = "0.8.5"
-bevy = "0.15.0"
+bevy = "0.15.2"

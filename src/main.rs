@@ -1,5 +1,3 @@
-extern crate rand;
-
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use std::env;
@@ -141,7 +139,7 @@ fn setup(
 
 fn update_block_atoms(mut query: Query<&mut BlockMatcher>) {
     query.par_iter_mut().for_each(|mut block| {
-        builder::mutate_blocks_with_new_particles(&mut rand::thread_rng(), &mut block.block);
+        builder::mutate_blocks_with_new_particles(&mut unigen::rand::rng(), &mut block.block);
 
         builder::calculate_charge(&mut block.block);
     });

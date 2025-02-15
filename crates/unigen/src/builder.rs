@@ -106,7 +106,7 @@ impl Blocks {
     pub fn tick(universe: &mut [core::Block]) {
         universe
             .par_chunks_mut(CHUNK_SIZE)
-            .for_each_init(rand::thread_rng, |rng, chunk| {
+            .for_each_init(rand::rng, |rng, chunk| {
                 for block in chunk {
                     mutate_blocks_with_new_particles(rng, block);
                 }
@@ -129,10 +129,10 @@ pub fn calculate_charge(block: &mut core::Block) {
 
 pub fn mutate_blocks_with_new_particles<R: Rng>(rng: &mut R, block: &mut core::Block) {
     let (electrons, protons, neutrons, rotation): (u8, u8, u8, u8) = (
-        rng.gen_range(0..118),
-        rng.gen_range(0..118),
-        rng.gen_range(0..118),
-        rng.gen_range(1..7),
+        rng.random_range(0..118),
+        rng.random_range(0..118),
+        rng.random_range(0..118),
+        rng.random_range(1..7),
     );
 
     match rotation {
