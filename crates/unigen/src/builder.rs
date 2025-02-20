@@ -190,16 +190,53 @@ pub fn generate_universe(parsed_size: u32) -> Vec<core::Block> {
     let total_baryons = generated_universe_length * default_baryons;
     let total_quarks = generated_universe_length * default_baryons * quarks_per_baryon;
 
-    println!("Atoms: {}", &total_atoms);
-    println!("Baryons: {}", &total_baryons);
-    println!("Quarks: {}", &total_quarks);
+    println!("Atoms: {}", pretty_print_nums(&total_atoms));
+    println!("Baryons: {}", pretty_print_nums(&total_baryons));
+    println!("Quarks: {}", pretty_print_nums(&total_quarks));
     println!("{}", &separator.magenta().bold());
 
     let total_objects = &total_atoms + &total_baryons + &total_quarks;
-    println!("Total objects in memory: {}", &total_objects);
+    println!(
+        "Total high-level objects in memory: {}",
+        pretty_print_nums(&total_objects)
+    );
     println!("{}", &separator.green().bold());
 
     generated_universe
+}
+
+fn pretty_print_nums(num: &usize) -> String {
+    num.to_string()
+        .as_bytes()
+        .rchunks(3)
+        .rev()
+        .map(std::str::from_utf8)
+        .collect::<Result<Vec<&str>, _>>()
+        .unwrap()
+        .join(",")
+}
+
+#[test]
+fn it_can_pretty_print_large_numbers() {
+    let nums: Vec<(usize, String)> = vec![
+        (4, String::from("4")),
+        (40, String::from("40")),
+        (400, String::from("400")),
+        (4_000, String::from("4,000")),
+        (40_000, String::from("40,000")),
+        (400_000, String::from("400,000")),
+        (4_000_000, String::from("4,000,000")),
+        (40_000_000, String::from("40,000,000")),
+        (400_000_000, String::from("400,000,000")),
+        (4_000_000_000, String::from("4,000,000,000")),
+        (40_000_000_000, String::from("40,000,000,000")),
+        (400_000_000_000, String::from("400,000,000,000")),
+        (4_000_000_000_000, String::from("4,000,000,000,000")),
+    ];
+
+    for num in nums {
+        assert_eq!(pretty_print_nums(&num.0), num.1)
+    }
 }
 
 #[test]
