@@ -1,13 +1,13 @@
 [package]
 name = "oxidizy"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["selfup <boudinot.regis@yahoo.com>"]
-edition = "2021"
+edition = "2024"
 
 [workspace]
 members = ["crates/*"]
 
 [dependencies]
-unigen = { path = "crates/unigen", version = "0.2.0", default-features = false }
+unigen = { path = "crates/unigen", version = "0.3.0", default-features = false }
 
 bevy = "0.15.2"
