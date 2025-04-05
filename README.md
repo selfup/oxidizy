@@ -15,7 +15,7 @@ Another ambitious goal, would be to set up bonding logic to create water or othe
 
 The most difficult part will be setting up an electro-magnetic field. That is why we are starting with the simplest form of an electro magnetic field.
 
-More to come :rocket:
+Core universe generator `unigen` lives here now: https://github.com/selfup/unigen-rs
 
 ---
 

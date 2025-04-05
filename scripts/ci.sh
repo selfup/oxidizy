@@ -18,18 +18,4 @@ echo 'running tests'
 
 echo 'tests success!'
 
-echo 'running dev.generate'
-
-./scripts/dev.generate.sh
-./scripts/dev.generate.sh 20
-
-echo 'dev.generate success!'
-
-echo 'running generate'
-
-./scripts/generate.sh
-./scripts/generate.sh 20
-
-echo 'generate success!'
-
 echo 'ci success!'
