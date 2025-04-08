@@ -1,5 +1,5 @@
 ![github-pipeline](https://github.com/selfup/oxidizy/actions/workflows/rust.yml/badge.svg)
-![gitlab-pipeline](https://gitlab.com/selfup/oxidizy/badges/main/pipeline.svg)
+    ![gitlab-pipeline](https://gitlab.com/selfup/oxidizy/badges/main/pipeline.svg)
 
 # Oxidizy
 
@@ -58,40 +58,6 @@ Total objects in memory: 1632960000
 ```
 
 ![image](https://github.com/user-attachments/assets/dd767f05-5a4d-4304-9904-991d68ebb261)
-
-### Sans UI
-
-Bevy/ECS code is not tested. Still in beta and too many refactorings will take place over the next year or so.
-
-However if you want to fill up a bunch of RAM and see how performant the `builder::generate_universe` is, you can run the generate script:
-
-_warning this used up 80% of my RAM and I have 32GB of RAM!_
-
-**`460` is cubed and then 118 default protons and neutrons are made per atom!**
-
-```
-$ ./scripts/generate.sh 460
---------------------------------
-Threads: 16
-Building..
---------------------------------
-Universe built
---------------------------------
-Calculating charge of field..
---------------------------------
-Field is Anionic
---------------------------------
-Atoms: 97336000
-Baryons: 22971296000
-Quarks: 68913888000
---------------------------------
-Total objects in memory: 91982520000
---------------------------------
-
-real    0m6.070s
-user    0m0.000s
-sys     0m0.015s
-```
 
 ### Repos
 
