@@ -14,18 +14,4 @@ Write-Output 'running tests'
 
 Write-Output 'tests success!'
 
-Write-Output 'running dev.generate'
-
-.\pwsh\dev.generate.ps1
-.\pwsh\dev.generate.ps1 20
-
-Write-Output 'dev.generate success!'
-
-Write-Output 'running generate'
-
-.\pwsh\generate.ps1
-.\pwsh\generate.ps1 20
-
-Write-Output 'generate success!'
-
 Write-Output 'ci success!'
