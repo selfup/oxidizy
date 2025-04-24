@@ -124,6 +124,7 @@ fn setup(
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
         brightness: 0.35,
+        affects_lightmapped_meshes: false,
     });
 
     let up = Vec3::new(0.0, 1.0, 0.0);
@@ -131,7 +132,7 @@ fn setup(
     commands
         .spawn((
             Camera3d::default(),
-            Transform::from_translation(Vec3::new(-60.0, 50.0, 50.0))
+            Transform::from_translation(Vec3::new(200.0, 150.0, 250.0))
                 .looking_at(Vec3::default(), up),
         ))
         .insert(CameraMatcher());
