@@ -1,10 +1,10 @@
 [package]
 name = "oxidizy"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["selfup <boudinot.regis@yahoo.com>"]
 edition = "2024"
 
 [dependencies]
 unigen = { git = "https://github.com/selfup/unigen-rs", version = "0.4.0", default-features = false }
 
-bevy = "0.15.3"
+bevy = "0.16.0"
