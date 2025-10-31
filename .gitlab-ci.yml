@@ -6,5 +6,5 @@ rust-latest:
   image: rust:latest
   script:
     - apt-get update
-    - apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev -y
+    - apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev libwayland-dev -y
     - ./scripts/ci.sh
