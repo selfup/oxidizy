@@ -5,5 +5,5 @@ rust-latest:
   stage: build
   image: rust:latest
   script:
-    - ./script/os.sh
+    - ./scripts/os.sh
     - ./scripts/ci.sh
