@@ -19,7 +19,7 @@ jobs:
     - name: Rustup Update
       run: rustup update
     - name: OS Deps
-      run: - ./script/os.sh
+      run: ./script/os.sh
     - uses: Swatinem/rust-cache@v2
     - name: Tests
       run: ./scripts/ci.sh
