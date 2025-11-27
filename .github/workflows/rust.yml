@@ -19,12 +19,7 @@ jobs:
     - name: Rustup Update
       run: rustup update
     - name: OS Deps
-      run: "sudo apt-get update \
-              && sudo apt-get install \
-                g++ pkg-config libx11-dev \
-                libasound2-dev libudev-dev \
-                libwayland-dev \
-                  -y"
+      run: - ./script/os.sh
     - uses: Swatinem/rust-cache@v2
     - name: Tests
       run: ./scripts/ci.sh
