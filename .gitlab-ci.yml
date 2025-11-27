@@ -5,6 +5,5 @@ rust-latest:
   stage: build
   image: rust:latest
   script:
-    - apt-get update
-    - apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev libwayland-dev -y
+    - ./scripts/os.sh
     - ./scripts/ci.sh
