@@ -7,4 +7,4 @@ edition = "2024"
 [dependencies]
 unigen = { git = "https://github.com/selfup/unigen-rs", version = "0.4.1", default-features = false }
 
-bevy = "0.17.2"
+bevy = "0.17.3"
