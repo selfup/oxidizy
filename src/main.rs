@@ -121,7 +121,7 @@ fn setup(
 
     commands.insert_resource(charged_atom_materials);
 
-    commands.insert_resource(AmbientLight {
+    commands.insert_resource(GlobalAmbientLight {
         color: Color::WHITE,
         brightness: 0.35,
         affects_lightmapped_meshes: false,
