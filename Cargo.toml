@@ -1,6 +1,6 @@
 [package]
 name = "oxidizy"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["selfup <boudinot.regis@yahoo.com>"]
 edition = "2024"
 
