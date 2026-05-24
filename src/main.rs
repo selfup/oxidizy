@@ -2,7 +2,7 @@ use bevy::camera::visibility::NoFrustumCulling;
 use bevy::core_pipeline::core_3d::Transparent3d;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::ecs::query::QueryItem;
-use bevy::ecs::system::{lifetimeless::*, SystemParamItem};
+use bevy::ecs::system::{SystemParamItem, lifetimeless::*};
 use bevy::mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout};
 use bevy::pbr::{
     MeshPipeline, MeshPipelineKey, RenderMeshInstances, SetMeshBindGroup, SetMeshViewBindGroup,
@@ -10,7 +10,7 @@ use bevy::pbr::{
 };
 use bevy::prelude::*;
 use bevy::render::extract_component::{ExtractComponent, ExtractComponentPlugin};
-use bevy::render::mesh::{allocator::MeshAllocator, RenderMesh, RenderMeshBufferInfo};
+use bevy::render::mesh::{RenderMesh, RenderMeshBufferInfo, allocator::MeshAllocator};
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_phase::{
     AddRenderCommand, DrawFunctions, PhaseItem, PhaseItemExtraIndex, RenderCommand,
@@ -103,8 +103,11 @@ fn update_atoms(mut query: Query<(&mut Blocks, &mut InstanceMaterialData)>) {
             .zip(data_slice.par_iter_mut())
             .for_each(|(block, inst)| {
                 builder::mutate_blocks_with_new_particles(&mut unigen::rand::rng(), block);
+
                 builder::calculate_charge(block);
+
                 inst.position = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+
                 inst.color = charge_to_color(block.charge);
             });
     }
@@ -125,6 +128,7 @@ fn camera_movement(
     } else if input_dir.length() > 0. {
         for mut transform in query.iter_mut() {
             let input_dir = (transform.rotation * input_dir).normalize();
+
             transform.translation += input_dir * (time.delta_secs_f64() * 50.0) as f32;
         }
     }
@@ -140,18 +144,23 @@ fn get_input_dir(
     if keyboard_input.pressed(KeyCode::KeyW) {
         input_dir -= Vec3::new(0.0, 0.0, 1.0);
     }
+
     if keyboard_input.pressed(KeyCode::KeyS) {
         input_dir += Vec3::new(0.0, 0.0, 1.0);
     }
+
     if keyboard_input.pressed(KeyCode::KeyA) {
         input_dir -= Vec3::new(1.0, 0.0, 0.0);
     }
+
     if keyboard_input.pressed(KeyCode::KeyD) {
         input_dir += Vec3::new(1.0, 0.0, 0.0);
     }
+
     if keyboard_input.pressed(KeyCode::Space) {
         input_dir += Vec3::new(0.0, 1.0, 0.0);
     }
+
     if keyboard_input.pressed(KeyCode::ShiftLeft) {
         input_dir -= Vec3::new(0.0, 1.0, 0.0);
     }
@@ -165,12 +174,16 @@ fn get_input_dir(
                         "block_id_zero x: {} - y: {} - z: {}",
                         block.x, block.y, block.z
                     );
+
                     known_location = Vec3::new(block.x as f32, block.y as f32, block.z as f32);
+
                     snap_to_universe = true;
+
                     break 'outer;
                 }
             }
         }
+
         input_dir = known_location;
     }
 
@@ -236,8 +249,7 @@ fn queue_custom(
     let draw_custom = transparent_3d_draw_functions.read().id::<DrawCustom>();
 
     for (view, msaa) in &views {
-        let Some(transparent_phase) =
-            transparent_render_phases.get_mut(&view.retained_view_entity)
+        let Some(transparent_phase) = transparent_render_phases.get_mut(&view.retained_view_entity)
         else {
             continue;
         };
@@ -247,19 +259,22 @@ fn queue_custom(
         let rangefinder = view.rangefinder3d();
 
         for (entity, main_entity) in &material_meshes {
-            let Some(mesh_instance) =
-                render_mesh_instances.render_mesh_queue_data(*main_entity)
+            let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(*main_entity)
             else {
                 continue;
             };
+
             let Some(mesh) = meshes.get(mesh_instance.mesh_asset_id) else {
                 continue;
             };
+
             let key =
                 view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology());
+
             let pipeline = pipelines
                 .specialize(&pipeline_cache, &custom_pipeline, key, &mesh.layout)
                 .unwrap();
+
             transparent_phase.add(Transparent3d {
                 entity: (entity, *main_entity),
                 pipeline,
@@ -290,6 +305,7 @@ fn prepare_instance_buffers(
             contents: bytemuck::cast_slice(instance_data.as_slice()),
             usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
+
         commands.entity(entity).insert(InstanceBuffer {
             buffer,
             length: instance_data.len(),
@@ -325,6 +341,7 @@ impl SpecializedMeshPipeline for CustomPipeline {
         let mut descriptor = self.mesh_pipeline.specialize(key, layout)?;
 
         descriptor.vertex.shader = self.shader.clone();
+
         descriptor.vertex.buffers.push(VertexBufferLayout {
             array_stride: size_of::<InstanceData>() as u64,
             step_mode: VertexStepMode::Instance,
@@ -341,6 +358,7 @@ impl SpecializedMeshPipeline for CustomPipeline {
                 },
             ],
         });
+
         descriptor.fragment.as_mut().unwrap().shader = self.shader.clone();
 
         // Atoms are opaque even though we're in the Transparent3d phase;
@@ -384,17 +402,19 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
     ) -> RenderCommandResult {
         let mesh_allocator = mesh_allocator.into_inner();
 
-        let Some(mesh_instance) =
-            render_mesh_instances.render_mesh_queue_data(item.main_entity())
+        let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(item.main_entity())
         else {
             return RenderCommandResult::Skip;
         };
+
         let Some(gpu_mesh) = meshes.into_inner().get(mesh_instance.mesh_asset_id) else {
             return RenderCommandResult::Skip;
         };
+
         let Some(instance_buffer) = instance_buffer else {
             return RenderCommandResult::Skip;
         };
+
         let Some(vertex_buffer_slice) =
             mesh_allocator.mesh_vertex_slice(&mesh_instance.mesh_asset_id)
         else {
@@ -414,7 +434,9 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
                 else {
                     return RenderCommandResult::Skip;
                 };
+
                 pass.set_index_buffer(index_buffer_slice.buffer.slice(..), *index_format);
+
                 pass.draw_indexed(
                     index_buffer_slice.range.start..(index_buffer_slice.range.start + count),
                     vertex_buffer_slice.range.start as i32,
