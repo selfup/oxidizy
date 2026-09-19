@@ -1,14 +1,16 @@
 use bevy::camera::visibility::NoFrustumCulling;
-use bevy::core_pipeline::core_3d::Transparent3d;
+use bevy::core_pipeline::core_3d::{Transparent3d, TransparentSortingInfo3d};
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::ecs::query::QueryItem;
 use bevy::ecs::system::{SystemParamItem, lifetimeless::*};
 use bevy::mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout};
 use bevy::pbr::{
-    MeshPipeline, MeshPipelineKey, RenderMeshInstances, SetMeshBindGroup, SetMeshViewBindGroup,
-    SetMeshViewBindingArrayBindGroup,
+    MeshInputUniform, MeshPipeline, MeshPipelineKey, MeshPipelineSystems, MeshUniform,
+    RenderMeshInstances, SetMeshBindGroup, SetMeshViewBindGroup, SetMeshViewBindingArrayBindGroup,
+    ViewKeyCache, get_mesh_instance_world_from_local,
 };
 use bevy::prelude::*;
+use bevy::render::batching::gpu_preprocessing::BatchedInstanceBuffers;
 use bevy::render::extract_component::{ExtractComponent, ExtractComponentPlugin};
 use bevy::render::mesh::{RenderMesh, RenderMeshBufferInfo, allocator::MeshAllocator};
 use bevy::render::render_asset::RenderAssets;
@@ -18,6 +20,7 @@ use bevy::render::render_phase::{
 };
 use bevy::render::render_resource::*;
 use bevy::render::renderer::RenderDevice;
+use bevy::render::sync_component::SyncComponent;
 use bevy::render::sync_world::MainEntity;
 use bevy::render::view::{ExtractedView, NoIndirectDrawing};
 use bevy::render::{Render, RenderApp, RenderStartup, RenderSystems};
@@ -192,11 +195,15 @@ fn get_input_dir(
 
 // ---------------------------------------------------------------------------
 // Custom GPU instancing pipeline
-// Adapted from Bevy 0.18.1 examples/shader_advanced/custom_shader_instancing.rs
+// Adapted from Bevy 0.19.1 examples/shader_advanced/custom_shader_instancing.rs
 // ---------------------------------------------------------------------------
 
 #[derive(Component, Deref)]
 struct InstanceMaterialData(Vec<InstanceData>);
+
+impl SyncComponent for InstanceMaterialData {
+    type Target = (Self, InstanceBuffer);
+}
 
 impl ExtractComponent for InstanceMaterialData {
     type QueryData = &'static InstanceMaterialData;
@@ -216,7 +223,10 @@ impl Plugin for CustomMaterialPlugin {
         app.sub_app_mut(RenderApp)
             .add_render_command::<Transparent3d, DrawCustom>()
             .init_resource::<SpecializedMeshPipelines<CustomPipeline>>()
-            .add_systems(RenderStartup, init_custom_pipeline)
+            .add_systems(
+                RenderStartup,
+                init_custom_pipeline.after(MeshPipelineSystems),
+            )
             .add_systems(
                 Render,
                 (
@@ -242,21 +252,25 @@ fn queue_custom(
     pipeline_cache: Res<PipelineCache>,
     meshes: Res<RenderAssets<RenderMesh>>,
     render_mesh_instances: Res<RenderMeshInstances>,
+    maybe_batched_instance_buffers: Option<
+        Res<BatchedInstanceBuffers<MeshUniform, MeshInputUniform>>,
+    >,
     material_meshes: Query<(Entity, &MainEntity), With<InstanceMaterialData>>,
     mut transparent_render_phases: ResMut<ViewSortedRenderPhases<Transparent3d>>,
-    views: Query<(&ExtractedView, &Msaa)>,
+    views: Query<&ExtractedView>,
+    view_key_cache: Res<ViewKeyCache>,
 ) {
     let draw_custom = transparent_3d_draw_functions.read().id::<DrawCustom>();
 
-    for (view, msaa) in &views {
+    for view in &views {
         let Some(transparent_phase) = transparent_render_phases.get_mut(&view.retained_view_entity)
         else {
             continue;
         };
 
-        let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples());
-        let view_key = msaa_key | MeshPipelineKey::from_hdr(view.hdr);
-        let rangefinder = view.rangefinder3d();
+        let Some(&view_key) = view_key_cache.get(&view.retained_view_entity) else {
+            continue;
+        };
 
         for (entity, main_entity) in &material_meshes {
             let Some(mesh_instance) = render_mesh_instances.render_mesh_queue_data(*main_entity)
@@ -264,22 +278,35 @@ fn queue_custom(
                 continue;
             };
 
-            let Some(mesh) = meshes.get(mesh_instance.mesh_asset_id) else {
+            let Some(mesh) = meshes.get(mesh_instance.mesh_asset_id()) else {
                 continue;
             };
 
-            let key =
-                view_key | MeshPipelineKey::from_primitive_topology(mesh.primitive_topology());
+            let key = view_key
+                | MeshPipelineKey::from_primitive_topology_and_strip_index(
+                    mesh.primitive_topology(),
+                    mesh.index_format(),
+                );
 
             let pipeline = pipelines
                 .specialize(&pipeline_cache, &custom_pipeline, key, &mesh.layout)
                 .unwrap();
 
-            transparent_phase.add(Transparent3d {
+            transparent_phase.add_retained(Transparent3d {
+                sorting_info: TransparentSortingInfo3d::Sorted {
+                    mesh_center: get_mesh_instance_world_from_local(
+                        *main_entity,
+                        mesh_instance.current_uniform_index,
+                        &render_mesh_instances,
+                        maybe_batched_instance_buffers.as_deref(),
+                    )
+                    .transform_point3(mesh.aabb_center),
+                    depth_bias: 0.0,
+                },
                 entity: (entity, *main_entity),
                 pipeline,
                 draw_function: draw_custom,
-                distance: rangefinder.distance(&mesh_instance.center),
+                distance: 0.0,
                 batch_range: 0..1,
                 extra_index: PhaseItemExtraIndex::None,
                 indexed: true,
@@ -365,8 +392,8 @@ impl SpecializedMeshPipeline for CustomPipeline {
         // force depth write + depth test so a closer atom drawn later still
         // wins the pixel and stacked motion stays visible.
         if let Some(depth_stencil) = descriptor.depth_stencil.as_mut() {
-            depth_stencil.depth_write_enabled = true;
-            depth_stencil.depth_compare = CompareFunction::GreaterEqual;
+            depth_stencil.depth_write_enabled = Some(true);
+            depth_stencil.depth_compare = Some(CompareFunction::GreaterEqual);
         }
 
         Ok(descriptor)
@@ -407,7 +434,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
             return RenderCommandResult::Skip;
         };
 
-        let Some(gpu_mesh) = meshes.into_inner().get(mesh_instance.mesh_asset_id) else {
+        let Some(gpu_mesh) = meshes.into_inner().get(mesh_instance.mesh_asset_id()) else {
             return RenderCommandResult::Skip;
         };
 
@@ -416,7 +443,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
         };
 
         let Some(vertex_buffer_slice) =
-            mesh_allocator.mesh_vertex_slice(&mesh_instance.mesh_asset_id)
+            mesh_allocator.mesh_vertex_slice(&mesh_instance.mesh_asset_id())
         else {
             return RenderCommandResult::Skip;
         };
@@ -430,7 +457,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawMeshInstanced {
                 count,
             } => {
                 let Some(index_buffer_slice) =
-                    mesh_allocator.mesh_index_slice(&mesh_instance.mesh_asset_id)
+                    mesh_allocator.mesh_index_slice(&mesh_instance.mesh_asset_id())
                 else {
                     return RenderCommandResult::Skip;
                 };
